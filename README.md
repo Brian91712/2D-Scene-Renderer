@@ -1,5 +1,5 @@
 # 2D Scene Renderer
-This is a very simple and easy to use 2D Scene Renderer programmed using the Skript interpreted language created by the SkriptLang team.
+This is a very simple and easy to use 2D Scene Renderer programmed using the Skript interpreted language created by the SkriptLang team. If you have any suggestions for additional features, message me on discord (`brian9171`).
 ## Dependencies
 - Skript-2.15+
 - oopsk-1.0-beta2
