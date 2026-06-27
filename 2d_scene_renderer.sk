@@ -1,0 +1,217 @@
+# ----------------------------------------------------------------------------------------------------------
+# This skript was made by Brian9171
+# Reach out to me on discord (brian9171) if you have any questions or want to make any bug reports.
+# ----------------------------------------------------------------------------------------------------------
+
+on load:
+  set {2dsr-base-scale} to vector(1, 0.5, 0) # 
+  set {2dsr-base-center-translation} to vector(-0.0125, -0.061, 0)
+  #
+  set {2dsr-pixel-scale-translation} to 0.0025
+  set {2dsr-pixel-scale-scale} to 0.02
+  #
+  set {2dsr-screen-scale} to vector(8, 4, 0)
+  set {2dsr-screen-translation} to vector(-0.0125, -0.125, 0)
+
+struct Scene:
+  elements: Element structs
+  #
+  position: location = location(0.5, 4, 0.5, world "world")
+  forward: vector
+  #
+  background_colour: colour # If it is not set, there will be no background.
+  #
+  scene_scale: vector = vector(1, 1, 0) # scale of the scene
+  #
+  right: vector
+  up: vector
+  #
+  background: Entity
+
+struct Element:
+  position: vector = vector(0, 0, 0)
+  pivot: vector = vector(0, 0, 0)
+  rotation: vector = vector(0, 0, 0)
+  scale: vector = vector(100, 100, 100)
+  colour: colour = rgb(255, 255, 255)
+  #
+  interpolation: integer = 1 # How many ticks of interpolation does this element have?
+  #
+  entity: Entity
+  #
+  edited: boolean = false
+  # corner vertices
+  c: vectors
+  # axes
+  n0: vector
+  n1: vector
+
+function setup_scene(scene: Scene struct) :: Scene struct:
+  # Set up the axes
+  if {_scene}->forward is not set:
+    set {_scene}->forward to normalized (vector from yaw (yaw of ({_scene}->position)) and pitch (pitch of ({_scene}->position)))
+  #
+  set {_scene}->right to normalized (({_scene}->forward) cross vector(0, 1, 0))
+  set {_scene}->up to normalized (({_scene}->right) cross ({_scene}->forward))
+  # Set yaw / pitch
+  set yaw of ({_scene}->position) to yaw of ({_scene}->forward)
+  set pitch of ({_scene}->position) to pitch of ({_scene}->forward)
+  # Create the background entity
+  if {_scene}->background_colour is set:
+    spawn text display at ({_scene}->position)
+    set {_back} to last spawned entity
+    #
+    set text of {_back} to " "
+    set colour of {_back} to ({_scene}->background_colour)
+    #
+    set {_scale} to ({_scene}->scene_scale) * {2dsr-screen-scale}
+    #
+    set transformation scale of {_back} to {_scale}
+    set transformation translation of {_back} to {_scale} * {2dsr-screen-translation}
+    #
+    set {_scene}->background to {_back}
+  #
+  return {_scene}
+
+function update_element(scene: Scene struct, element: Element struct):
+  set {_rotation} to {_element}->rotation
+  # Calculate world-space corners
+  set {_c::1} to vector(-0.5, -0.5, 0) * {_element}->scale
+  set {_c::2} to vector(-0.5,  0.5, 0) * {_element}->scale
+  set {_c::3} to vector( 0.5, -0.5, 0) * {_element}->scale
+  set {_c::4} to vector( 0.5,  0.5, 0) * {_element}->scale
+  #
+  loop {_c::*}:
+    set {_x} to x of (loop-value)
+    set {_y} to y of (loop-value)
+    set {_x} to {_x} * cos(x of {_rotation}) - {_y} * sin(x of {_rotation})
+    set {_y} to {_x} * sin(x of {_rotation}) - {_y} * cos(x of {_rotation})
+    set {_c::%loop-index%} to vector({_x}, {_y}, 0) + {_element}->position
+  #
+  set {_element}->c to {_c::*}
+  # Calculate the axes
+  set {_n} to normalized ({_c::2} - {_c::1})
+  set {_element}->n0 to {_n}
+  set {_element}->n1 to vector((y of {_n}) * -1, x of {_n}, 0)
+  #
+  set {_element}->edited to true
+
+function render_scene(scene: Scene struct) :: boolean:
+  set {_changed} to false
+  #
+  for {_element} in {_scene}->elements where [input->edited = true]:
+    #
+    set {_changed} to true
+    set {_element}->edited to false
+    # Calculate all true variables
+    set {_scale} to ({_element}->scale) * {2dsr-pixel-scale-scale}
+    set {_position} to ({_element}->position) * {2dsr-pixel-scale-translation}
+    set {_rotation} to {_element}->rotation
+    set {_pivot} to ({_element}->pivot) * ({_element}->scale) * {2dsr-pixel-scale-translation} / 2
+    # Calculate orientation
+    set {_orientation} to quaternion(1, 0, 0, 0)
+    rotate {_orientation} around local z-axis by (x of {_rotation})
+    rotate {_orientation} around local y-axis by (y of {_rotation})
+    rotate {_orientation} around local x-axis by (z of {_rotation})
+    # Calculate translation
+    set {_translation} to {2dsr-base-center-translation} * {_scale} - {_pivot}
+    rotate {_translation} around (rotation axis of {_orientation}) by (rotation angle of {_orientation})
+    set {_translation} to {_translation} + {_position} + {_pivot}
+    # Calculate scale
+    set {_scale} to {_scale} * {2dsr-base-scale}
+    # Update:
+    set interpolation delay of {_element}->entity to 0 tick
+    #
+    set colour of {_element}->entity to {_element}->colour
+    set transformation scale of {_element}->entity to {_scale}
+    set left rotation of {_element}->entity to {_orientation}
+    set transformation translation of {_element}->entity to {_translation}
+  #
+  return {_changed}
+
+function add_element_to_scene(scene: Scene struct, element: Element struct) :: Element struct:
+  # Calculate all true variables
+  set {_scale} to ({_element}->scale) * {2dsr-pixel-scale-scale}
+  set {_position} to ({_element}->position) * {2dsr-pixel-scale-translation}
+  set {_rotation} to {_element}->rotation
+  set {_pivot} to ({_element}->pivot) * ({_element}->scale) * {2dsr-pixel-scale-translation} / 2
+  # Calculate world-space corners
+  set {_c::1} to vector(-0.5, -0.5, 0) * {_element}->scale
+  set {_c::2} to vector(-0.5,  0.5, 0) * {_element}->scale
+  set {_c::3} to vector( 0.5, -0.5, 0) * {_element}->scale
+  set {_c::4} to vector( 0.5,  0.5, 0) * {_element}->scale
+  #
+  loop {_c::*}:
+    set {_x} to x of (loop-value)
+    set {_y} to y of (loop-value)
+    set {_x} to {_x} * cos(x of {_rotation}) - {_y} * sin(x of {_rotation})
+    set {_y} to {_x} * sin(x of {_rotation}) - {_y} * cos(x of {_rotation})
+    set {_c::%loop-index%} to vector({_x}, {_y}, 0) + {_element}->position
+  #
+  set {_element}->c to {_c::*}
+  # Calculate the axes
+  set {_n} to normalized ({_c::2} - {_c::1})
+  set {_element}->n0 to {_n}
+  set {_element}->n1 to vector((y of {_n}) * -1, x of {_n}, 0)
+  # Calculate orientation
+  set {_orientation} to quaternion(1, 0, 0, 0)
+  rotate {_orientation} around local z-axis by (x of {_rotation})
+  rotate {_orientation} around local y-axis by (y of {_rotation})
+  rotate {_orientation} around local x-axis by (z of {_rotation})
+  # Calculate translation
+  set {_translation} to {2dsr-base-center-translation} * {_scale} - {_pivot}
+  rotate {_translation} around (rotation axis of {_orientation}) by (rotation angle of {_orientation})
+  set {_translation} to {_translation} + {_position} + {_pivot}
+  # Calculate scale
+  set {_scale} to {_scale} * {2dsr-base-scale}
+  # Spawn the entity
+  spawn text display at {_scene}->position ~ {_scene}->forward * 0.0001
+  set {_e} to last spawned entity
+  #
+  set text of {_e} to " "
+  set interpolation duration of {_e} to timespan({_element}->interpolation, ticks)
+  set colour of {_e} to {_element}->colour
+  #
+  set transformation scale of {_e} to {_scale}
+  set left rotation of {_e} to {_orientation}
+  set transformation translation of {_e} to {_translation}
+  #
+  set {_element}->entity to {_e}
+  # Add the element to the scene's elements
+  add {_element} to {_scene}->elements
+  #
+  return {_element}
+
+function delete_scene(scene: Scene struct):
+  delete entity within ({_scene}->background)
+  loop {_scene}->elements:
+    delete entity within (loop-value)->entity
+
+function elements_overlap(a: Element struct, b: Element struct) :: boolean:
+  # Calculate the axes
+  set {_axes::1} to {_a}->n0
+  set {_axes::2} to {_a}->n1
+  set {_axes::3} to {_b}->n0
+  set {_axes::4} to {_b}->n1
+  #
+  loop {_axes::*}:
+    set {_av::*} to project(loop-value, {_a})
+    set {_bv::*} to project(loop-value, {_b})
+    #
+    if any:
+      {_av::2} < {_bv::1}
+      {_bv::2} < {_av::1}
+    then:
+      return false
+  #
+  return true
+
+local function project(a: vector, e: Element struct) :: numbers:
+  set {_min} to 99999999999999
+  set {_max} to -99999999999999
+  loop {_e}->c:
+    set {_d} to (loop-value) dot {_a}
+    set {_min} to min({_d}, {_min})
+    set {_max} to max({_d}, {_max})
+  #
+  return ({_min}, {_max})
