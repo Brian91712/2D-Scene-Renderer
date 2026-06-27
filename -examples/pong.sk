@@ -1,0 +1,93 @@
+command pong:
+  trigger:
+    # spawn seat
+    set {_l} to location(0.5, 1.5, 0.75, world "world")
+    #
+    spawn armor stand at {_l}
+    set {_seat} to last spawned entity
+    #
+    set gravity of {_seat} to false
+    make {_seat} invisible
+    silence {_seat}
+    #
+    make player ride {_seat}
+    #
+    set {_l} to location(0.5, 4.5, 1.9999, world "world", 180, 0)
+    #
+    set {_scene} to setup_scene(Scene struct instance):
+      position: {_l}
+      scene_scale: vector(1, 1, 0)
+      background_colour: rgb(0, 0, 0, 255)
+    #
+    set {_player} to add_element_to_scene({_scene}, Element struct instance):
+      position: vector(-180, 0, 0)
+      rotation: vector(0, 0, 0)
+      pivot: vector(0, 0, 0)
+      scale: vector(20, 80, 0)
+      colour: rgb(255, 255, 255)
+    #
+    set {_opponent} to add_element_to_scene({_scene}, Element struct instance):
+      position: vector(180, 0, 0)
+      rotation: vector(0, 0, 0)
+      pivot: vector(0, 0, 0)
+      scale: vector(20, 80, 0)
+      colour: rgb(255, 255, 255)
+    #
+    set {_ball} to add_element_to_scene({_scene}, Element struct instance):
+      position: vector(0, 0, 0)
+      rotation: vector(0, 0, 0)
+      pivot: vector(0, 0, 0)
+      scale: vector(20, 20, 0)
+      colour: rgb(255, 255, 255)
+    #
+    set {_x} to 5 or -5
+    set {_ball-vel} to vector({_x}, (random number from 0.25 to 0.75) * {_x}, 0)
+    #
+    set {_running} to true
+    # game loop
+    while {_running} = true:
+      # MOVE PLAYER SQUARE
+      if player is pressing forward movement key:
+        set {_player}->position to {_player}->position + vector(0, 10, 0)
+        update_element({_scene}, {_player})
+      else if player is pressing backward movement key:
+        set {_player}->position to {_player}->position + vector(0, -10, 0)
+        update_element({_scene}, {_player})
+      # apply ball velocity
+      set {_last-ball-pos} to {_ball}->position
+      #
+      set {_ball}->position to {_ball}->position + {_ball-vel}
+      #
+      set {_opponent}->position to vector(x of {_opponent}->position, y of {_ball}->position, 0)
+      #
+      update_element({_scene}, {_ball})
+      update_element({_scene}, {_opponent})
+      # check if ball is touching the wall
+      if abs(x of {_ball}->position) >= 190:
+        if (x of {_ball}->position) > 0:
+          send title "YOU WIN!!!" to player
+        else:
+          send title "lmao loser" to player
+        play sound "entity.generic.explode" with volume 100 with pitch 2 to player
+        stop loop
+      # player bounce
+      if any:
+        elements_overlap({_ball}, {_player}) = true
+        elements_overlap({_ball}, {_opponent}) = true
+      then:
+        set {_ball-vel} to {_ball-vel} * vector(-1, 1.5, 1)
+        set {_ball}->position to {_last-ball-pos}
+        play sound "block.note_block.bit" with pitch (random number from 0.1 to 2) to player
+      # ceiling/floor bounce
+      set {_abs} to abs(y of {_ball}->position)
+      if {_abs} >= 190:
+        set {_ball-vel} to {_ball-vel} * vector(1, -1, 1)
+        set {_y} to (y of {_ball}->position) / {_abs} * 190
+        set {_ball}->position to vector(x of {_ball}->position, {_y}, 0)
+        play sound "block.note_block.bit" with pitch (random number from 0.1 to 2) to player
+      #
+      render_scene({_scene})
+      wait 1 tick
+    #
+    delete_scene({_scene})
+    kill {_seat}
