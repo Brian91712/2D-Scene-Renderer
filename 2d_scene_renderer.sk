@@ -39,7 +39,7 @@ struct Element:
   #
   entity: Entity
   #
-  edited: boolean = false
+  edited: boolean = true
   # corner vertices
   c: vectors
   # axes
