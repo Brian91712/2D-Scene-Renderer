@@ -1,0 +1,4 @@
+name: 2d-scene-renderer
+version: 1.0
+description: A simple and easy to use 2D scene renderer, made by Brian9171.
+requires: skript >= 2.15, oopsk >= 1.0
