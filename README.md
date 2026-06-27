@@ -42,7 +42,6 @@ However, it will not change visually until you run `render_scene(Scene struct)`.
 ### Other useful functions:
 `elements_overlap(Element struct, Element struct)`: Returns a boolean. Checks whether two elements overlap. This will return an incorrect value if you change an element and forget to update it, such as by changing its position.
 ## Examples
+`-examples/pong.sk`
 
 https://github.com/user-attachments/assets/0d7419b0-3646-46a7-b7cb-842c5b1572fb
-
-A ping-pong implementation made using this library (`-examples/pong.sk`)
