@@ -16,7 +16,8 @@ set {_scene} to setup_scene(Scene struct instance):
   forward: vector(1, 0, 0) # vector
   scene_scale: vector(5, 5, 0) # vector
   background_colour: rgb(0, 0, 0, 255) # colour
-# This produces a scene facing the positive X direction with a scale of 5x5 blocks, and automatically generates a black background.
+# This produces a scene facing the positive X direction with a scale of 5x5 blocks, and
+# automatically generates a black background.
 ```
 After creating our scene, you will find that it is empty. You can add elements to the scene using the `add_element_to_scene(Scene struct, Element struct)` function, and filling in the following details: `position`, `rotation`, `pivot`, `scale`, `colour`, and `interpolation`. 
 
@@ -40,3 +41,6 @@ update_element({_scene}, {_element}
 However, it will not change visually until you run `render_scene(Scene struct)`. Finally, if you don't want your scene anymore, you can delete it using the `delete_scene(Scene struct)` function.
 ### Other useful functions:
 `elements_overlap(Element struct, Element struct)`: Returns a boolean. Checks whether two elements overlap. This will return an incorrect value if you change an element and forget to update it, such as by changing its position.
+## Examples
+-# A ping-pong implementation made using this library (`-examples/pong.sk`)
+https://github.com/user-attachments/assets/0d7419b0-3646-46a7-b7cb-842c5b1572fb
