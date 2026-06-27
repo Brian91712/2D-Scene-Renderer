@@ -9,7 +9,7 @@ With [pacskage](https://github.com/miberss/pacskage):
 /package install https://github.com/Brian91712/2D-Scene-Renderer
 ```
 ## Usage
-To create a new scene, use `setup_scene(Scene struct)`, and fill in the details for `position`. The orientation of the scene is calculated using the yaw and pitch of the `position` location object. However, if you wish to provide a vector instead, you can set `forward` to your desired vector. You can additionally change the scale of the scene by modifying `scene_scale`, where the scale is blocks, and to make the scene generate a background, set `background_colour` using `rgb(r, g, b, a)`. For example:
+To create a new scene, use `setup_scene(Scene struct)`, and fill in the following details: `position`, `forward`, `scene_scale`, `background_colour`. If you don't set the `background_colour`, it will not generate a background. For example:
 ```applescript
 set {_scene} to setup_scene(Scene struct instance):
   position: location(0.5, 3, 0.5, world "world") # location
@@ -18,7 +18,9 @@ set {_scene} to setup_scene(Scene struct instance):
   background_colour: rgb(0, 0, 0, 255) # colour
 # This produces a scene facing the positive X direction with a scale of 5x5 blocks, and automatically generates a black background.
 ```
-After creating our scene, you will find that it is empty. You can add elements to the scene using the `add_element_to_scene(Scene struct, Element struct)` function, and filling in the following details: `position`, `rotation`, `pivot`, `scale`, `colour`, and `interpolation`. `rotation` is in Euler Angles, and `interpolation` is the interpolation duration given to the text display entity representing this element. For example:
+After creating our scene, you will find that it is empty. You can add elements to the scene using the `add_element_to_scene(Scene struct, Element struct)` function, and filling in the following details: `position`, `rotation`, `pivot`, `scale`, `colour`, and `interpolation`. 
+
+`rotation` is in Euler Angles, and `interpolation` is the interpolation duration given to the text display entity representing this element. For example:
 ```applescript
 set {_element} to add_element_to_scene({_scene}, Element struct instance):
   position: vector(0, 0, 0) # vector, scaled to 'scene screen pixels'
@@ -29,3 +31,12 @@ set {_element} to add_element_to_scene({_scene}, Element struct instance):
   interpolation: 1 tick # timespan
 ```
 Make sure to save a reference to both the scene and the element. Otherwise, you will be incapable of modifying them later on. Anyway, now that we have an element on our scene, we can render the scene using the function `render_scene(Scene struct)`.
+
+In addition, after making any changes to an element's variables, such as by setting its `position` or `rotation`, make sure to call the `update_element(Scene struct, Element struct)` function. For example:
+```applescript
+set {_element}->position to vector(10, 10, 0)
+update_element({_scene}, {_element}
+```
+However, it will not change visually until you run `render_scene(Scene struct)`. Finally, if you don't want your scene anymore, you can delete it using the `delete_scene(Scene struct)` function.
+### Other useful functions:
+`elements_overlap(Element struct, Element struct)`: Returns a boolean. Checks whether two elements overlap. This will return an incorrect value if you change an element and forget to update it, such as by changing its position.
