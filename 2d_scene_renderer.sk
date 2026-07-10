@@ -195,8 +195,8 @@ function elements_overlap(a: Element struct, b: Element struct) :: boolean:
   set {_axes::4} to {_b}->n1
   #
   loop {_axes::*}:
-    set {_av::*} to project(loop-value, {_a})
-    set {_bv::*} to project(loop-value, {_b})
+    set {_av::*} to project_element(loop-value, {_a})
+    set {_bv::*} to project_element(loop-value, {_b})
     #
     if any:
       {_av::2} < {_bv::1}
@@ -206,7 +206,7 @@ function elements_overlap(a: Element struct, b: Element struct) :: boolean:
   #
   return true
 
-local function project(a: vector, e: Element struct) :: numbers:
+function project_element(a: vector, e: Element struct) :: numbers:
   set {_min} to 99999999999999
   set {_max} to -99999999999999
   loop {_e}->c:
