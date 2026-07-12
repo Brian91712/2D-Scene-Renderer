@@ -107,7 +107,7 @@ function render_element(element: Element struct, recalculate_orientation: boolea
   set {_scale} to ({_element}->scale) * {-2dsr-pixel-scale-scale}
   # Check if we need to recalculate orientation
   if {_recalculate_orientation} = true:
-    set {_orientation} to ((left rotation of {_element}->entity).identity()).rotationZYX((x of {_rotation}), (y of {_rotation}), (z of {_rotation}))
+    set {_orientation} to ((left rotation of {_element}->entity).identity()).rotationZYX((x of {_element}->rotation), (y of {_element}->rotation), (z of {_element}->rotation))
   else:
     set {_orientation} to left rotation of {_element}->entity
   # Calculate translation
