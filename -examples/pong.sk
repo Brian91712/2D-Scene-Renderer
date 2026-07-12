@@ -1,3 +1,7 @@
+#
+# This uses an outdated version of 2D-Scene-Renderer.
+#
+
 command pong:
   trigger:
     # spawn seat
