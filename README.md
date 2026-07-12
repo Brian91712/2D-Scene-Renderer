@@ -42,7 +42,7 @@ update_element_position({_element}, vector(10, 0, 0)) # Original position was ve
 set {_element}->position to vector(10, 0, 0)
 update_element_all({_element}) # This function does not need you to provide an offset vector because it recalculates everything instead of just offsetting it. This is best used only if you change orientation, as otherwise it is not efficient to use.
 ```
-However, it will not change visually until you run `render_element(Element struct)`. Finally, if you don't want your scene anymore, you can delete it using the `delete_scene(Scene struct)` function, and delete individual elements with the `delete_element(Element struct)` function.
+However, it will not change visually until you run `render_element(Element struct, recalculate_orientation)`. Finally, if you don't want your scene anymore, you can delete it using the `delete_scene(Scene struct)` function, and delete individual elements with the `delete_element(Element struct)` function.
 ### Other useful functions:
 `elements_overlap(Element struct, Element struct)`: Returns a boolean. Checks whether two elements overlap. This will return an incorrect value if you change an element and forget to update it, such as by changing its position.
 `project_element(axis, Element struct)`: Returns a min and max. Projects an elements' corners onto an axis.
