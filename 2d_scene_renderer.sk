@@ -117,7 +117,7 @@ function render_element(element: Element struct, recalculate_orientation: boolea
   # Update:
   set interpolation delay of {_element}->entity to 0 tick
   #
-  set colour of {_element}->entity to {_el-a}->colour
+  set colour of {_element}->entity to {_element}->colour
   set transformation scale of {_element}->entity to {_scale} * {-2dsr-base-scale}
   #
   if {_recalculate_orientation} = true:
